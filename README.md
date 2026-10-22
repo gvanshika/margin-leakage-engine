@@ -12,9 +12,16 @@ An enterprise-grade analytics engine designed to detect, diagnose, and remediate
 ## 📌 Executive Summary & Incident Case Study
 > **"Diagnosing a R$ 111,760 Margin Collapse in Bulky Logistics"**
 > - **The Symptom:** Gross revenue surged 14% during Q4 Black Friday promotions, but net Contribution Margin decayed to **-11.4%**.
-> - **The Root Cause:** Dual anomaly detection (IQR + Isolation Forest) identified **492 high-confidence leakage orders** where freight costs exploded to **109.4% of product price**, coupled with 16.5% promo voucher stacking.
+> - **The Root Cause:** Dual anomaly detection (IQR + Isolation Forest) identified **492 high-confidence leakage orders** (with 118 catastrophic loss-making orders < -R$ 100) where freight costs exploded to **109.4% of product price**, coupled with 16.5% promo voucher stacking.
 > - **Causal Econometric Proof (DiD):** Quasi-experimental Difference-in-Differences regression proved the discount campaign yielded **zero statistically significant margin lift ($p = 0.681$)**, confirming pure top-line cannibalization.
 > - **Prescriptive Recovery:** Throttling vouchers on low-AOV items and implementing a bulky freight surcharge projects an annualized EBITDA recovery of **~R$ 340,000**.
+
+---
+
+## 🖥️ Executive Cockpit Preview (Power BI)
+
+![Power BI Executive Cockpit](docs/powerbi_cockpit.png)
+*Interactive Power BI cockpit displaying the monthly revenue-margin divergence, top margin-bleeding categories, and the real-time prescriptive freight optimization simulator.*
 
 ---
 

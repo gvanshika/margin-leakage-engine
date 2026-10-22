@@ -12,17 +12,20 @@
 ## ⚠️ Key Modeling Assumptions & Boundaries
 - **Synthetic Unit Cost Parameters**: Olist records public marketplace checkout data but does not publish proprietary seller manufacturing costs or marketing attribution. We modeled category-level COGS (45%–60%), a flat blended customer acquisition cost (R$ 50.00 baseline), and return allowances (25% penalty on 5% return frequency).
 - **Population Definition**: All calculations are evaluated across **108,638 order item records** corresponding to **95,127 distinct delivered orders**.
-- **DiD Comparison Limitations**: Comparing bulky home goods (`furniture_decor`) against personal care (`health_beauty`) reflects large baseline differences in logistics friction; results should be interpreted as an exploratory quasi-experiment rather than definitive causal proof.
+- **DiD Comparison & Parallel Trends Limitation**: Comparing bulky home goods (`furniture_decor`) against personal care (`health_beauty`) reflects large baseline differences in logistics friction. Furthermore, formal statistical pre-trend testing has not yet been conducted; results should be evaluated strictly as an exploratory demonstration of the DiD framework rather than causal identification.
+- **Metric Definitions (118 vs 492 Leakages)**:
+  - **492 High-Confidence Leaks (README / Analysis)**: Identified via the multi-variate intersection of 1D Statistical IQR and 5D Isolation Forest.
+  - **118 Critical Leak Orders (Power BI Cockpit)**: Represents the subset of extreme catastrophic transactions where unit net margin fell below **-R$ 100.00** (`is_critical_leak = 1`).
 
 ---
 
 ## 📌 Executive Summary & Incident Case Study
-> **"Investigating an R$ 111,762 Margin Drain in Low-AOV & Bulky Freight"**
+> **"Investigating an R$ 111.76K Margin Drain in Low-AOV & Bulky Freight"**
 > - **Financial Baseline**: Across **108,638 delivered items**, gross revenue totaled **R$ 13.05M** with a net realized margin of **-R$ 1.27M (-9.74% realized margin)** under baseline unit cost assumptions.
-> - **The Leakage Cluster**: Dual anomaly detection (1D Statistical IQR + Multi-dimensional Isolation Forest) isolated **492 high-confidence operational leaks** accounting for **-R$ 111,761.98 in net margin drain** (averaging -R$ 227.16 per order).
+> - **The Leakage Cluster**: Dual anomaly detection (1D Statistical IQR + Multi-dimensional Isolation Forest) isolated **492 high-confidence operational leaks** accounting for **-R$ 111.76K in net margin drain** (averaging -R$ 227.16 per order).
 > - **The Primary Driver**: Average freight on flagged orders surged to **R$ 131.17** (representing **109.4% of order revenue**), driven by low-AOV items shipped long distances and promo voucher stacking (16.48% of order value).
 > - **Causal Econometric Analysis (DiD)**: A quasi-experimental Difference-in-Differences regression around Black Friday 2017 showed **no detectable margin lift** ($\beta = +2.30$, $p = 0.681$, 95% CI: `[-8.67, +13.27]`), indicating promotions expanded top-line volume without improving unit economics.
-> - **Prescriptive Simulation**: A 10% freight cost optimization across the top 3 bleeding bulky categories (`furniture_decor`, `office_furniture`, `housewares`) recovers **R$ 37.82K** in EBITDA on this historical sample.
+> - **Prescriptive Simulation**: A 10% freight cost reduction applied across the **total historical shipping spend of all delivered items in the top 3 bleeding categories** (`furniture_decor`, `office_furniture`, `housewares`, total baseline shipping = R$ 378,222.84) recovers **R$ 37.82K** in EBITDA ($378,222.84 \times 0.10$).
 
 ---
 
@@ -84,7 +87,7 @@ Raw Transactional Data (Orders, Items, Payments, Products)
 | **Average Freight Cost** | R$ 20.58 | **R$ 131.17** | **+537% Freight Shock** |
 | **Shipping-to-Revenue Ratio** | 29.7% | **109.4%** | Shipping > Product Value |
 | **Promotional Voucher Usage**| 3.18% | **16.48%** | Severe Promo Stacking |
-| **Net Realized Margin** | R$ 18.30 | **-R$ 227.16** | **-R$ 111,761.98 Total Drain** |
+| **Net Realized Margin** | R$ 18.30 | **-R$ 227.16** | **-R$ 111.76K Total Drain** |
 
 ### 3. Difference-in-Differences (DiD) Econometric Model
 ```
@@ -121,7 +124,9 @@ Because internal costs are synthetic, the table below demonstrates how total rea
 ### 2. Empirical Verification of the 109.4% Freight Ratio
 To verify whether shipping exceeding product price is a genuine business condition or a logging artifact, we audited all **3,920 order items** with `shipping_ratio_pct > 100%`:
 - **Price Distribution**: Median price is **R$ 13.90** (25th percentile: R$ 10.50, 75th percentile: R$ 18.90).
-- **Category Composition**: `electronics` (601 items), `telephony` (422 items), `housewares` (374 items), `furniture_decor` (320 items), `health_beauty` (293 items).
+- **Category Composition**: 
+  - **Top 5 Categories (51.3% of total)**: `electronics` (601 items), `telephony` (422 items), `housewares` (374 items), `furniture_decor` (320 items), `health_beauty` (293 items).
+  - **Remaining 52 Categories (48.7%)**: 1,910 items spread across long-tail product lines (sports, toys, auto accessories).
 - **Operational Reality**: Minimum Brazilian postal carrier parcel thresholds baseline around R$ 15.00–R$ 29.00. When low-ticket accessories are ordered in unbundled single-item baskets, courier freight naturally inverts the margin structure.
 
 ---

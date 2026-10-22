@@ -12,10 +12,10 @@
 ## ⚠️ Key Modeling Assumptions & Boundaries
 - **Synthetic Unit Cost Parameters**: Olist records public marketplace checkout data but does not publish proprietary seller manufacturing costs or marketing attribution. We modeled category-level COGS (45%–60%), a flat blended customer acquisition cost (R$ 50.00 baseline), and return allowances (25% penalty on 5% return frequency).
 - **Population Definition**: All calculations are evaluated across **108,638 order item records** corresponding to **95,127 distinct delivered orders**.
-- **DiD Comparison & Parallel Trends Limitation**: Comparing bulky home goods (`furniture_decor`) against personal care (`health_beauty`) reflects large baseline differences in logistics friction. Furthermore, formal statistical pre-trend testing has not yet been conducted; results should be evaluated strictly as an exploratory demonstration of the DiD framework rather than causal identification.
+- **DiD Comparison & Parallel Trends Limitation**: Comparing bulky home goods (`furniture_decor`) against personal care (`health_beauty`) reflects large baseline differences in freight friction. Furthermore, formal statistical pre-trend testing has not yet been conducted; results should be evaluated strictly as an exploratory demonstration of the DiD framework rather than causal identification.
 - **Metric Definitions (118 vs 492 Leakages)**:
   - **492 High-Confidence Leaks (README / Analysis)**: Identified via the multi-variate intersection of 1D Statistical IQR and 5D Isolation Forest.
-  - **118 Critical Leak Orders (Power BI Cockpit)**: Represents the subset of extreme catastrophic transactions where unit net margin fell below **-R$ 100.00** (`is_critical_leak = 1`).
+  - **118 Critical Leak Orders (Power BI Cockpit)**: Represents the subset of extreme catastrophic transactions where unit net margin fell below **-R$ 100.00** (`is_critical_leak = 1`). In the Power BI dashboard, this card specifically filters for orders with realized margin < -R$ 100.
 
 ---
 
@@ -24,8 +24,8 @@
 > - **Financial Baseline**: Across **108,638 delivered items**, gross revenue totaled **R$ 13.05M** with a net realized margin of **-R$ 1.27M (-9.74% realized margin)** under baseline unit cost assumptions.
 > - **The Leakage Cluster**: Dual anomaly detection (1D Statistical IQR + Multi-dimensional Isolation Forest) isolated **492 high-confidence operational leaks** accounting for **-R$ 111.76K in net margin drain** (averaging -R$ 227.16 per order).
 > - **The Primary Driver**: Average freight on flagged orders surged to **R$ 131.17** (representing **109.4% of order revenue**), driven by low-AOV items shipped long distances and promo voucher stacking (16.48% of order value).
-> - **Causal Econometric Analysis (DiD)**: A quasi-experimental Difference-in-Differences regression around Black Friday 2017 showed **no detectable margin lift** ($\beta = +2.30$, $p = 0.681$, 95% CI: `[-8.67, +13.27]`), indicating promotions expanded top-line volume without improving unit economics.
-> - **Prescriptive Simulation**: A 10% freight cost reduction applied across the **total historical shipping spend of all delivered items in the top 3 bleeding categories** (`furniture_decor`, `office_furniture`, `housewares`, total baseline shipping = R$ 378,222.84) recovers **R$ 37.82K** in EBITDA ($378,222.84 \times 0.10$).
+> - **Causal Econometric Analysis (DiD)**: A quasi-experimental Difference-in-Differences regression around Black Friday 2017 showed **no detectable margin effect** ($\beta = +2.30$, $p = 0.681$, 95% CI: `[-8.67, +13.27]`).
+> - **Prescriptive Simulation**: A 10% freight cut applied across the **total historical freight of all delivered items in the top 3 bleeding categories** (`furniture_decor`, `office_furniture`, `housewares`, total baseline freight = R$ 378,222.84) recovers **R$ 37.82K** in EBITDA ($378,222.84 \times 0.10$).
 
 ---
 
@@ -115,11 +115,11 @@ Because internal costs are synthetic, the table below demonstrates how total rea
 
 | COGS % | CAC = R$ 30 | CAC = R$ 50 (Baseline) | CAC = R$ 70 |
 | :--- | :--- | :--- | :--- |
-| **40% (High Margin)** | **+R$ 2.23M (+17.1%)** | +R$ 0.06M (+0.5%) | -R$ 2.11M (-16.2%) |
-| **50% (Baseline)** | +R$ 0.93M (+7.1%) | **-R$ 1.24M (-9.5%)** | -R$ 3.42M (-26.2%) |
-| **60% (Low Margin)** | -R$ 0.37M (-2.9%) | -R$ 2.55M (-19.5%) | -R$ 4.72M (-36.2%) |
+| **45% (Lower Bound)** | **+R$ 1.58M (+12.1%)** | -R$ 0.59M (-4.5%) | -R$ 2.76M (-21.2%) |
+| **50% (Midpoint Baseline)**| +R$ 0.93M (+7.1%) | **-R$ 1.24M (-9.5%)** | -R$ 3.42M (-26.2%) |
+| **60% (Upper Bound)** | -R$ 0.37M (-2.9%) | -R$ 2.55M (-19.5%) | -R$ 4.72M (-36.2%) |
 
-*(Note on reconciliation: In the baseline table model above, COGS is uniformly 50% yielding -R$ 1.24M / -9.5%, whereas the production SQL pipeline incorporates category-specific rates from `assumptions.csv` ranging between 45%–60%, resulting in the -R$ 1.27M / -9.74% baseline reported on the dashboard).*
+*(Note on reconciliation: In the sensitivity grid above, COGS is tested at uniform rates (45%, 50%, 60%) to observe macro elasticity. In contrast, the baseline SQL pipeline applies category-specific rates from `assumptions.csv` ranging between 45%–60%, resulting in the -R$ 1.27M / -9.74% baseline reported on the dashboard).*
 
 ### 2. Empirical Verification of the 109.4% Freight Ratio
 To verify whether shipping exceeding product price is a genuine business condition or a logging artifact, we audited all **3,920 order items** with `shipping_ratio_pct > 100%`:
@@ -127,7 +127,7 @@ To verify whether shipping exceeding product price is a genuine business conditi
 - **Category Composition**: 
   - **Top 5 Categories (51.3% of total)**: `electronics` (601 items), `telephony` (422 items), `housewares` (374 items), `furniture_decor` (320 items), `health_beauty` (293 items).
   - **Remaining 52 Categories (48.7%)**: 1,910 items spread across long-tail product lines (sports, toys, auto accessories).
-- **Operational Reality**: Minimum Brazilian postal carrier parcel thresholds baseline around R$ 15.00–R$ 29.00. When low-ticket accessories are ordered in unbundled single-item baskets, courier freight naturally inverts the margin structure.
+- **Operational Reality**: Minimum Brazilian postal carrier parcel thresholds (Correios PAC / SEDEX) baseline around R$ 15.00–R$ 29.00 (plausible operational driver, not yet formally audited against carrier rate cards). When low-ticket accessories are ordered in unbundled single-item baskets, courier freight naturally inverts the margin structure.
 
 ---
 

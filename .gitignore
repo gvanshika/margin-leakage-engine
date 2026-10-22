@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Large Raw Datasets (Do not push 100MB+ CSV files to GitHub)
+data/
+*.duckdb
+*.duckdb.wal
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints*/
+
+# Power BI local cache / recovery
+*.pbix.temp

@@ -83,9 +83,35 @@ Model: item_margin ~ post_campaign + treatment + post_campaign:treatment
 ```
 - **Treatment Category**: `furniture_decor` (Promotional target)
 - **Control Category**: `health_beauty` (Organic baseline)
-- **Results**:
-  - `treatment` ($\beta = -32.17, p < 0.001$): Bulky furniture incurs R$ 32.17 higher baseline logistics friction.
-  - `post:treatment` ($\beta = +2.30, p = 0.681$): No significant margin gain from discounts; proves margin cannibalization.
+- **Full Econometric Estimates & 95% Confidence Intervals**:
+  | Variable | Coefficient ($\beta$) | Std Error | t-statistic | p-value | 95% Conf. Interval |
+  | :--- | :--- | :--- | :--- | :--- | :--- |
+  | **Intercept** | +1.1004 | 2.943 | 0.374 | 0.708 | [-4.670, +6.871] |
+  | **post_campaign** | +0.5028 | 4.052 | 0.124 | 0.901 | [-7.442, +8.447] |
+  | **treatment** | **-32.1732** | 3.993 | -8.057 | **< 0.001** | **[-40.003, -24.344]** |
+  | **post_campaign:treatment** | **+2.3029** | 5.594 | 0.412 | **0.681** | **[-8.666, +13.272]** |
+
+> **Key Insight**: The 95% Confidence Interval for the interaction term spans from **-8.67 to +13.27**, straddling zero with a high p-value of 0.681. This firmly rejects the hypothesis that the Black Friday promotion caused any statistically significant margin expansion for bulky categories.
+
+---
+
+## 🔬 Assumptions, Sensitivity Analysis & Data Integrity
+
+### 1. COGS & CAC Sensitivity Matrix
+Since internal supplier cost (COGS) and exact attribution ad CAC are proprietary in public marketplace logs, we subjected our baseline model (`COGS: 50%`, `CAC: R$ 50`) to a multi-scenario sensitivity matrix across the entire **108,638 order item population**:
+
+| Assumed COGS % | CAC = R$ 30 | CAC = R$ 50 (Baseline) | CAC = R$ 70 |
+| :--- | :--- | :--- | :--- |
+| **40% (High Margin)** | **+R$ 2.23M (+17.1%)** | +R$ 0.06M (+0.5%) | -R$ 2.11M (-16.2%) |
+| **50% (Baseline)** | +R$ 0.93M (+7.1%) | **-R$ 1.24M (-9.5%)** | -R$ 3.42M (-26.2%) |
+| **60% (Low Margin)** | -R$ 0.37M (-2.9%) | -R$ 2.55M (-19.5%) | -R$ 4.72M (-36.2%) |
+
+> **Strategic Takeaway**: Profitability is ultra-sensitive to CAC on low-AOV baskets. When CAC is reduced from R$ 50 to R$ 30, overall operations swing from an EBITDA drain (-9.5%) to net positive (+7.1%).
+
+### 2. Is the 109.4% Freight Ratio an Operational Leak or a Data Artifact?
+We performed a deep-dive distribution check on all 3,920 records where `shipping_cost > price`:
+- **The Finding**: The median item price in this subset is **R$ 13.90** (75th percentile is R$ 18.90), while average cross-state Brazilian postal freight ranges between **R$ 15.00 and R$ 29.00**.
+- **The Diagnosis**: This is **NOT a logging error or data corruption**; it is an authentic marketplace dynamic known as **"Low-AOV Freight Inversion"**. When consumers buy cheap single items (phone accessories, small beauty tools) across regional zones, minimum carrier freight floors exceed the item sale price. Unless bundled or subsidized by a minimum basket threshold (AOV floor), these transactions guarantee negative unit margins.
 
 ---
 

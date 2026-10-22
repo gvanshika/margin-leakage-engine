@@ -95,7 +95,17 @@ Model: item_margin ~ post_campaign + treatment + post_campaign:treatment
 
 ---
 
-## 🔬 Assumptions, Sensitivity Analysis & Data Integrity
+## ⚠️ Assumptions & Analytical Limitations
+
+> [!IMPORTANT]
+> **Production Limitations & Modeling Boundaries**
+> 1. **Synthetic Assumptions for Internal Unit Costs**: The Olist public dataset provides external marketplace logs (orders, freight, payments) but lacks proprietary seller costs. As documented in [`data/assumptions.csv`](data/assumptions.csv), **COGS (40–60%)**, **Blended CAC (R$ 50 baseline)**, and **Return Damage Allowance (25% penalty on 5% return rate)** are simulated baselines.
+> 2. **CAC Attribution Simplification**: In live production, CAC is dynamic across marketing channels (Meta vs Google vs Affiliate). We modeled a flat-allocated CAC per item to demonstrate unit-level margin erosion on low-AOV transactions.
+> 3. **DiD Parallel Trends Assumption**: The Difference-in-Differences model relies on the parallel trends assumption between `furniture_decor` and `health_beauty`. While structural baseline freight differs, pre-intervention trends move in tandem, confirming the validity of the quasi-experimental design.
+
+---
+
+## 🔬 Sensitivity Analysis & Data Integrity
 
 ### 1. COGS & CAC Sensitivity Matrix
 Since internal supplier cost (COGS) and exact attribution ad CAC are proprietary in public marketplace logs, we subjected our baseline model (`COGS: 50%`, `CAC: R$ 50`) to a multi-scenario sensitivity matrix across the entire **108,638 order item population**:
